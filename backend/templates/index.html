@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA Genie - Developer Testing Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: none;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .file-upload {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fc;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            background: #e8ecff;
+        }
+
+        .file-upload.dragover {
+            background: #e8ecff;
+            border-color: #4c63d2;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .result-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-section h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .function-list {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .function-item {
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .function-item:last-child {
+            border-bottom: none;
+        }
+
+        .function-info {
+            flex: 1;
+        }
+
+        .function-name {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .function-args {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .function-select {
+            margin-left: 10px;
+        }
+
+        .quality-check {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .quality-check.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .quality-check.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 QA Genie</h1>
+            <p>Your AI-Powered Developer Testing Assistant</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('generate')">
+                🎯 Generate Function
+            </button>
+            <button class="tab" onclick="showTab('analyze')">
+                📊 Analyze Code File
+            </button>
+            <button class="tab" onclick="showTab('test-generation')">
+                🧪 Generate Tests
+            </button>
+        </div>
+
+        <!-- Generate Function Tab -->
+        <div id="generate" class="tab-content active">
+            <div class="form-group">
+                <label for="prompt">🎯 Describe the function you want to generate:</label>
+                <textarea id="prompt" rows="4" placeholder="e.g., Calculate the factorial of a number with error handling"></textarea>
+            </div>
+
+            <button class="btn" onclick="generateFunction()">
+                🚀 Generate Function & Tests
+            </button>
+
+            <div id="generate-loading" class="loading">
+                <div class="spinner"></div>
+                <p>🧠 AI is generating your function and tests...</p>
+            </div>
+
+            <div id="generate-results" class="results"></div>
+        </div>
+
+        <!-- Analyze Code File Tab -->
+        <div id="analyze" class="tab-content">
+            <div class="form-group">
+                <label>📁 Upload Python File for Analysis:</label>
+                <div class="file-upload" id="file-upload">
+                    <p>📎 Drag & drop your Python file here or click to select</p>
+                    <input type="file" id="file-input" accept=".py" style="display: none;">
+                    <button class="btn" onclick="document.getElementById('file-input').click()">
+                        📂 Select File
+                    </button>
+                </div>
+            </div>
+
+            <div id="analyze-loading" class="loading">
+                <div class="spinner"></div>
+                <p>🔍 Analyzing your code file...</p>
+            </div>
+
+            <div id="analyze-results" class="results"></div>
+        </div>
+
+        <!-- Test Generation Tab -->
+        <div id="test-generation" class="tab-content">
+            <div id="test-gen-content">
+                <div class="alert alert-warning">
+                    <strong>📋 Instructions:</strong> First upload and analyze a Python file in the "Analyze Code File" tab, then come back here to generate tests for specific functions.
+                </div>
+            </div>
+
+            <div id="test-gen-loading" class="loading">
+                <div class="spinner"></div>
+                <p>🧪 Generating comprehensive tests...</p>
+            </div>
+
+            <div id="test-gen-results" class="results"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentFileData = null;
+        let currentAnalysis = null;
+
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // File upload handling
+        document.getElementById('file-input').addEventListener('change', handleFileSelect);
+        
+        const fileUpload = document.getElementById('file-upload');
+        fileUpload.addEventListener('dragover', handleDragOver);
+        fileUpload.addEventListener('drop', handleDrop);
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            fileUpload.classList.add('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            fileUpload.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                analyzeFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                analyzeFile(file);
+            }
+        }
+
+        // Generate function
+        function generateFunction() {
+            const prompt = document.getElementById('prompt').value.trim();
+            if (!prompt) {
+                alert('Please enter a function description');
+                return;
+            }
+
+            const loading = document.getElementById('generate-loading');
+            const results = document.getElementById('generate-results');
+            
+            loading.classList.add('show');
+            results.classList.remove('show');
+
+            const sessionId = Date.now().toString();
+            
+            fetch('/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    prompt: prompt,
+                    session_id: sessionId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.classList.remove('show');
+                displayGenerateResults(data);
+            })
+            .catch(error => {
+                loading.classList.remove('show');
+                console.error('Error:', error);
+                alert('An error occurred while generating the function');
+            });
+        }
+
+        function displayGenerateResults(data) {
+            const results = document.getElementById('generate-results');
+            
+            if (data.success) {
+                results.innerHTML = `
+                    <div class="alert alert-success">
+                        ✅ Function generated successfully after ${data.attempts.length} attempt(s)!
+                    </div>
+                    
+                    <div class="result-section">
+                        <h3>📝 Generated Function:</h3>
+                        <div class="code-block">${escapeHtml(data.final_func_code)}</div>
+                        <button class="btn btn-secondary" onclick="copyToClipboard('${escapeHtml(data.final_func_code)}')">
+                            📋 Copy Function
+                        </button>
+                    </div>
+                    
+                    <div class="result-section">
+                        <h3>🧪 Generated Tests:</h3>
+                        <div class="code-block">${escapeHtml(data.final_test_code)}</div>
+                        <button class="btn btn-secondary" onclick="copyToClipboard('${escapeHtml(data.final_test_code)}')">
+                            📋 Copy Tests
+                        </button>
+                    </div>
+                    
+                    <div class="result-section">
+                        <h3>🔍 Test Results:</h3>
+                        <div class="code-block">${escapeHtml(data.test_output)}</div>
+                    </div>
+                `;
+            } else {
+                results.innerHTML = `
+                    <div class="alert alert-error">
+                        ❌ Failed to generate working function after ${data.attempts.length} attempts.
+                    </div>
+                    
+                    <div class="result-section">
+                        <h3>🔍 Attempts Made:</h3>
+                        ${data.attempts.map((attempt, index) => `
+                            <div class="alert ${attempt.success ? 'alert-success' : 'alert-error'}">
+                                <strong>Attempt ${attempt.attempt}:</strong> ${attempt.success ? 'Success' : 'Failed'}
+                                ${attempt.error ? `<br><small>Error: ${escapeHtml(attempt.error)}</small>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            results.classList.add('show');
+        }
+
+        // Analyze file
+        function analyzeFile(file) {
+            const loading = document.getElementById('analyze-loading');
+            const results = document.getElementById('analyze-results');
+            
+            loading.classList.add('show');
+            results.classList.remove('show');
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/analyze_file', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.classList.remove('show');
+                if (data.success) {
+                    currentFileData = data;
+                    currentAnalysis = data.analysis;
+                    displayAnalyzeResults(data);
+                    updateTestGenerationTab(data);
+                } else {
+                    alert('Error analyzing file: ' + data.error);
+                }
+            })
+            .catch(error => {
+                loading.classList.remove('show');
+                console.error('Error:', error);
+                alert('An error occurred while analyzing the file');
+            });
+        }
+
+        function displayAnalyzeResults(data) {
+            const results = document.getElementById('analyze-results');
+            const analysis = data.analysis;
+            const qualityChecks = data.quality_checks;
+
+            results.innerHTML = `
+                <div class="alert alert-success">
+                    ✅ File "${data.filename}" analyzed successfully!
+                </div>
+
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number">${analysis.total_functions}</div>
+                        <div class="stat-label">Functions</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${analysis.total_test_functions}</div>
+                        <div class="stat-label">Test Functions</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${analysis.total_classes}</div>
+                        <div class="stat-label">Classes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${analysis.functions.length - analysis.total_test_functions}</div>
+                        <div class="stat-label">Need Tests</div>
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <h3>🔍 Code Quality Checks:</h3>
+                    ${Object.entries(qualityChecks).map(([tool, result]) => `
+                        <div class="quality-check ${result.success ? 'success' : 'error'}">
+                            <strong>${tool.toUpperCase()}:</strong> ${result.success ? '✅ Passed' : '❌ Issues Found'}
+                            ${result.output ? `<br><small>${escapeHtml(result.output)}</small>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="result-section">
+                    <h3>📋 Functions Found:</h3>
+                    <div class="function-list">
+                        ${analysis.functions.filter(f => !f.is_test).map(func => `
+                            <div class="function-item">
+                                <div class="function-info">
+                                    <div class="function-name">${func.name}</div>
+                                    <div class="function-args">Args: ${func.args.join(', ') || 'None'}</div>
+                                    ${func.docstring ? `<div class="function-args">Doc: ${func.docstring.substring(0, 100)}...</div>` : ''}
+                                </div>
+                                <div>
+                                    ${func.is_private ? '🔒 Private' : '🔓 Public'}
+                                    ${func.has_tests ? '✅ Has Tests' : '❌ No Tests'}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            results.classList.add('show');
+        }
+
+        function updateTestGenerationTab(data) {
+            const testGenContent = document.getElementById('test-gen-content');
+            const analysis = data.analysis;
+            const untested_functions = analysis.functions.filter(f => !f.is_test && !f.is_private);
+
+            testGenContent.innerHTML = `
+                <div class="alert alert-success">
+                    📁 File "${data.filename}" loaded! Select functions to generate tests for:
+                </div>
+
+                <div class="form-group">
+                    <label>🎯 Select Functions to Generate Tests For:</label>
+                    <div class="function-list">
+                        ${untested_functions.map(func => `
+                            <div class="function-item">
+                                <div class="function-info">
+                                    <div class="function-name">${func.name}</div>
+                                    <div class="function-args">Args: ${func.args.join(', ') || 'None'}</div>
+                                </div>
+                                <div>
+                                    <input type="checkbox" class="function-select" value="${func.name}" id="func-${func.name}">
+                                    <label for="func-${func.name}">Generate Tests</label>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button class="btn" onclick="selectAllFunctions()">
+                        ☑️ Select All
+                    </button>
+                    <button class="btn btn-secondary" onclick="deselectAllFunctions()">
+                        ◻️ Deselect All
+                    </button>
+                    <button class="btn btn-success" onclick="generateTestsForFile()">
+                        🧪 Generate Tests
+                    </button>
+                </div>
+            `;
+        }
+
+        function selectAllFunctions() {
+            document.querySelectorAll('.function-select').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        }
+
+        function deselectAllFunctions() {
+            document.querySelectorAll('.function-select').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        }
+
+        function generateTestsForFile() {
+            const selectedFunctions = Array.from(document.querySelectorAll('.function-select:checked')).map(cb => cb.value);
+            
+            if (selectedFunctions.length === 0) {
+                alert('Please select at least one function to generate tests for');
+                return;
+            }
+
+            const loading = document.getElementById('test-gen-loading');
+            const results = document.getElementById('test-gen-results');
+            
+            loading.classList.add('show');
+            results.classList.remove('show');
+
+            fetch('/generate_tests_for_file', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    file_content: currentFileData.file_content,
+                    selected_functions: selectedFunctions,
+                    filename: currentFileData.filename
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.classList.remove('show');
+                if (data.success) {
+                    displayTestGenerationResults(data);
+                } else {
+                    alert('Error generating tests: ' + data.error);
+                }
+            })
+            .catch(error => {
+                loading.classList.remove('show');
+                console.error('Error:', error);
+                alert('An error occurred while generating tests');
+            });
+        }
+
+        function displayTestGenerationResults(data) {
+            const results = document.getElementById('test-gen-results');
+
+            results.innerHTML = `
+                <div class="alert alert-success">
+                    ✅ Tests generated successfully for ${Object.keys(data.individual_tests).length} function(s)!
+                </div>
+
+                <div class="result-section">
+                    <h3>🧪 Complete Test File:</h3>
+                    <pre class="code-block">${escapeHtml(data.combined_tests)}</pre>
+                    <button class="btn btn-secondary" onclick="copyToClipboard(\`${data.combined_tests.replace(/`/g, '\\`')}\`)">
+                        📋 Copy All Tests
+                    </button>
+                    <button class="btn btn-success" onclick="downloadTests(\`${data.combined_tests.replace(/`/g, '\\`')}\`, '${data.test_filename}')">
+                        💾 Download Test File
+                    </button>
+                </div>
+
+                <div class="result-section">
+                    <h3>📋 Individual Function Tests:</h3>
+                    ${Object.entries(data.individual_tests).map(([funcName, testCode]) => `
+                        <div class="function-item">
+                            <div class="function-info">
+                                <div class="function-name">Tests for ${funcName}()</div>
+                                <pre class="code-block">${escapeHtml(testCode)}</pre>
+                            </div>
+                            <div>
+                                <button class="btn btn-secondary" onclick="copyToClipboard(\`${testCode.replace(/`/g, '\\`')}\`)">
+                                    📋 Copy
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            results.classList.add('show');
+        }
+
+        function downloadTests(testCode, filename) {
+            fetch('/download_tests', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    test_code: testCode,
+                    filename: filename
+                })
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                console.error('Error downloading file:', error);
+                alert('Error downloading file');
+            });
+        }
+
+        // Fix the copyToClipboard function
+        function copyToClipboard(text) {
+            // Create a temporary textarea element
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); // For mobile devices
+            
+            try {
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textarea);
+                if (successful) {
+                    alert('📋 Code copied to clipboard!');
+                } else {
+                    alert('❌ Failed to copy to clipboard');
+                }
+            } catch (err) {
+                document.body.removeChild(textarea);
+                console.error('Could not copy text: ', err);
+                alert('❌ Failed to copy to clipboard');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
